@@ -14,7 +14,7 @@ global.OwnerName = "Fantox";
 global.sessionName = "session";
 
 //   Prefix  //
-global.prefa = ["#"];
+global.prefa = ["/"];
 
 global.limitawal = {
   premium: "Infinity",

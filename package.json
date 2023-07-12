@@ -29,7 +29,7 @@
     "anime-wallpaper": "^1.0.2",
     "awesome-phonenumber": "^2.70.0",
     "axios": "^0.24.0",
-    "baileysjs": "^6.2.1",
+    "baileysjs": "npm:@queenanya/baileys@latest",
     "cfonts": "^2.9.0",
     "chalk": "^4.1.2",
     "cheerio": "^1.0.0-rc.10",

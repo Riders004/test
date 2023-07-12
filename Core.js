@@ -73,11 +73,44 @@ if (global.db)
     ...(global.db || {}),
   };
 
-let pendaftar = JSON.parse(fs.readFileSync("./storage/user/user.json"));
-let balance = JSON.parse(fs.readFileSync("./database/balance.json"));
-global.db = JSON.parse(fs.readFileSync("./src/database.json"));
+let banUser = JSON.parse(fs.readFileSync('./database/banUser.json'));
+let banchat = JSON.parse(fs.readFileSync('./database/banChat.json'));
+
+ let _limit = JSON.parse(fs.readFileSync('./storage/user/limit.json'));
+ let _buruan = JSON.parse(fs.readFileSync('./storage/user/bounty.json'));
+ let _darahOrg = JSON.parse(fs.readFileSync('./storage/user/blood.json'))
+
+let pendaftar = JSON.parse(fs.readFileSync('./storage/user/user.json'))
+let balance = JSON.parse(fs.readFileSync('./database/balance.json'))
+let ssewa = JSON.parse(fs.readFileSync('./database/sewa.json'))
+let ban = JSON.parse(fs.readFileSync('./database/ban.json'))
+let autosticker = JSON.parse(fs.readFileSync('./database/autosticker.json'))
+const _autostick = JSON.parse(fs.readFileSync('./database/autostickpc.json'))
+let _leveling = JSON.parse(fs.readFileSync('./database/leveling.json'))
+let _level = JSON.parse(fs.readFileSync('./database/level.json'))
+let limit = JSON.parse(fs.readFileSync('./database/limit.json'))
+let setik = JSON.parse(fs.readFileSync('./src/sticker.json'))
+let vien = JSON.parse(fs.readFileSync('./src/audio.json'))
+let imagi = JSON.parse(fs.readFileSync('./src/image.json'))
+let videox = JSON.parse(fs.readFileSync('./src/video.json'))
+global.db = JSON.parse(fs.readFileSync('./src/database.json'))
 let _sewa = require("./lib/sewa");
-const sewa = JSON.parse(fs.readFileSync("./database/sewa.json"));
+const sewa = JSON.parse(fs.readFileSync('./database/sewa.json'))
+
+
+const time = moment.tz('Asia/Kolkata').format('DD/MM HH:mm:ss')
+const ucap = moment(Date.now()).tz('Asia/Kolkata').locale('id').format('a')
+var buln = ['/01/', '/02/', '/03/', '/04/', '/05/', '/06/', '/07/', '/08/', '/09/', '/10/', '/11/', '/12/'];
+var myHari = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+var tgel = new Date();
+var hri = tgel.getDate();
+var bulnh = tgel.getMonth();
+var thisHari = tgel.getDay(),
+    thisDaye = myHari[thisHari];
+var yye = tgel.getYear();
+var syear = (yye < 1000) ? yye + 1900 : yye;
+const jangwak = (hri + '' + buln[bulnh] + '' + syear)
+const janghar = (thisDaye)
 var myHari = [
   "Sunday",
   "Monday",
@@ -94,44 +127,34 @@ var yye = tgel.getYear();
 
 module.exports = Maria = async (Maria, m, chatUpdate, store) => {
   try {
-    var body =
-      m.mtype === "conversation"
-        ? m.message.conversation
-        : m.mtype == "imageMessage"
-        ? m.message.imageMessage.caption
-        : m.mtype == "videoMessage"
-        ? m.message.videoMessage.caption
-        : m.mtype == "extendedTextMessage"
-        ? m.message.extendedTextMessage.text
-        : m.mtype == "buttonsResponseMessage"
-        ? m.message.buttonsResponseMessage.selectedButtonId
-        : m.mtype == "listResponseMessage"
-        ? m.message.listResponseMessage.singleSelectReply.selectedRowId
-        : m.mtype == "templateButtonReplyMessage"
-        ? m.message.templateButtonReplyMessage.selectedId
-        : m.mtype === "messageContextInfo"
-        ? m.message.buttonsResponseMessage?.selectedButtonId ||
-          m.message.listResponseMessage?.singleSelectReply.selectedRowId ||
-          m.text
-        : "";
-    var budy = typeof m.text == "string" ? m.text : "";
-    const prefix = global.prefa;
-    const themeemoji = global.themeemoji;
-    const isCmd = body.startsWith(prefix);
-    const command = isCmd
-      ? body.slice(1).trim().split(" ")[0].toLowerCase()
-      : "";
-    const args = body.trim().split(/ +/).slice(1);
-    const pushname = m.pushName || "No Name";
-    
-    const botNumber = await Maria.decodeJid(Maria.user.id);
-    const isCreator = [botNumber, ...global.Owner].map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender)
-    const from = m.chat;
-    const isBotAdmins = m.isGroup ? groupAdmins.includes(botNumber) : false
+  var body = (m.mtype === 'conversation') ? m.message.conversation : (m.mtype == 'imageMessage') ? m.message.imageMessage.caption : (m.mtype == 'videoMessage') ? m.message.videoMessage.caption : (m.mtype == 'extendedTextMessage') ? m.message.extendedTextMessage.text : (m.mtype == 'buttonsResponseMessage') ? m.message.buttonsResponseMessage.selectedButtonId : (m.mtype == 'listResponseMessage') ? m.message.listResponseMessage.singleSelectReply.selectedRowId : (m.mtype == 'templateButtonReplyMessage') ? m.message.templateButtonReplyMessage.selectedId : (m.mtype === 'messageContextInfo') ? (m.message.buttonsResponseMessage?.selectedButtonId || m.message.listResponseMessage?.singleSelectReply.selectedRowId || m.text) : ''
+var budy = (typeof m.text == 'string' ? m.text : '')
+const prefix = global.prefa
+const isCmd = body.startsWith(prefix)
+const notCmd = body.startsWith('')
+const command = isCmd ? body.slice(1).trim().split(' ')[0].toLowerCase() : ''
+const args = body.trim().split(/ +/).slice(1)
+const pushname = m.pushName || "No Name"
+
+const botNumber = await Maria.decodeJid(Maria.user.id)
+const isCreator = [botNumber, ...global.Owner].map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender)
+const itsMe = m.sender == botNumber ? true : false
+const text = args.join(" ")
+const from = m.chat
+const quoted = m.quoted ? m.quoted : m
+const mime = (quoted.msg || quoted).mimetype || ''
+const isMedia = /image|video|sticker|audio/.test(mime)
+const messagesD = body.slice(0).trim().split(/ +/).shift().toLowerCase()
+const groupMetadata = m.isGroup ? await Maria.groupMetadata(m.chat).catch(e => {}) : ''
+const groupName = m.isGroup ? groupMetadata.subject : ''
+const participants = m.isGroup ? await groupMetadata.participants : ''
+const groupAdmins = m.isGroup ? await participants.filter(v => v.admin !== null).map(v => v.id) : ''
+const groupOwner = m.isGroup ? groupMetadata.owner : ''
+const isBotAdmins = m.isGroup ? groupAdmins.includes(botNumber) : false
 const isAdmins = m.isGroup ? groupAdmins.includes(m.sender) : false
- 
-    const isUser = pendaftar.includes(m.sender);
-    const groupAdmins = m.isGroup ? await participants.filter(v => v.admin !== null).map(v => v.id) : ''
+const isUser = pendaftar.includes(m.sender)
+const isBan = banUser.includes(m.sender)
+   
 
     autoreadsw = true;
     _sewa.expiredCheck(Maria, sewa);
@@ -141,9 +164,9 @@ const isAdmins = m.isGroup ? groupAdmins.includes(m.sender) : false
     };
 
 
-    const replay = (teks) => {
-      Maria.sendMessage(m.chat, { text: teks }, { quoted: m });
-    };
+    /* const replay = (teks) => {
+      Maria.sendMessage(m.chat, { text: teks }, { quoted: m }); 
+    }; */
 const sender = m.isGroup ? (m.key.participant ? m.key.participant : m.participant) : m.key.remoteJid
         const senderNumber = sender.split('@')[0]
         
@@ -283,7 +306,7 @@ case "support":
      if (!isBotAdmins) return replay(mess.botadmin)
      if (!isAdmins && !isCreator) return replay(mess.useradmin)
      let users = m.mentionedJid[0] ? m.mentionedJid[0] : m.quoted ? m.quoted.sender : text.replace(/[^0-9]/g, '')+'@s.whatsapp.net'
-     await Miku.groupParticipantsUpdate(m.chat, [users], 'remove')
+     await Maria.groupParticipantsUpdate(m.chat, [users], 'remove')
      }
      break
  ///////////////////////////////////////////////////
@@ -295,7 +318,7 @@ case "support":
  if (!isBotAdmins) return replay(mess.botadmin)
  let users = m.quoted ? m.quoted.sender : text.replace(/[^0-9]/g, '')+'@s.whatsapp.net'
  if (users.length == 0) return replay(`Please write the number of the person you want to add to thhis group`)
-  await Miku.groupParticipantsUpdate(m.chat, [users], 'add').then((res) => replay(`User Added Successfully!`)).catch((err) => replay(`Cannot add that user to this group!`))
+  await Maria.groupParticipantsUpdate(m.chat, [users], 'add').then((res) => replay(`User Added Successfully!`)).catch((err) => replay(`Cannot add that user to this group!`))
  }
  break
 			
