@@ -135,7 +135,6 @@ module.exports = Maria = async (Maria, m, chatUpdate, store) => {
     const command = isCmd ? body.slice(1).trim().split(' ')[0].toLowerCase() : ''
     const args = body.trim().split(/ +/).slice(1)
     const pushname = m.pushName || "No Name"
-
     const botNumber = await Maria.decodeJid(Maria.user.id)
     const isCreator = [botNumber, ...global.Owner].map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender)
     const itsMe = m.sender == botNumber ? true : false
@@ -393,11 +392,8 @@ module.exports = Maria = async (Maria, m, chatUpdate, store) => {
  ntilinkall.splice(off, 1)
  replay('Disabled all antilink !')
  } else {
-   let buttonsntilink = [
-   { buttonId: `${prefix}antilinkall on`, buttonText: { displayText: 'On' }, type: 1 },
-   { buttonId: `${prefix}antilinkall off`, buttonText: { displayText: 'Off' }, type: 1 }
-   ]
-   await Maria.sendButtonText(m.chat, buttonsntilink, `Please click the button below\n\nOn to enable\nOff to disable`, `${global.BotName}`, m)
+   let textmsg = 'Type ' + `${prefix}${command}` + ' on to turn on antilink feature or Type ' + `${prefix + command}` + ' off to turn off antilink feature'
+   await Maria.sendMessage(m.chat, { text: `${textmsg}`}, `${global.BotName}`, m)
    }
    }
    break
