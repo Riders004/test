@@ -136,7 +136,7 @@ module.exports = Maria = async (Maria, m, chatUpdate, store) => {
     const args = body.trim().split(/ +/).slice(1)
     const pushname = m.pushName || "No Name"
 
-    const botNumber = await Miku.decodeJid(Miku.user.id)
+    const botNumber = await Maria.decodeJid(Maria.user.id)
     const isCreator = [botNumber, ...global.Owner].map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender)
     const itsMe = m.sender == botNumber ? true : false
     const text = args.join(" ")
@@ -145,7 +145,7 @@ module.exports = Maria = async (Maria, m, chatUpdate, store) => {
     const mime = (quoted.msg || quoted).mimetype || ''
     const isMedia = /image|video|sticker|audio/.test(mime)
     const messagesD = body.slice(0).trim().split(/ +/).shift().toLowerCase()
-    const groupMetadata = m.isGroup ? await Miku.groupMetadata(m.chat).catch(e => { }) : ''
+    const groupMetadata = m.isGroup ? await Maria.groupMetadata(m.chat).catch(e => { }) : ''
     const groupName = m.isGroup ? groupMetadata.subject : ''
     const participants = m.isGroup ? await groupMetadata.participants : ''
     const groupAdmins = m.isGroup ? await participants.filter(v => v.admin !== null).map(v => v.id) : ''
@@ -292,8 +292,8 @@ module.exports = Maria = async (Maria, m, chatUpdate, store) => {
         if (m.key.fromMe) return reply(bvl)
         if (isCreator) return reply(bvl)
         kice = m.sender
-        await Miku.groupParticipantsUpdate(m.chat, [kice], 'remove')
-        Miku.sendMessage(from, { text: `\`\`\`「  Antilink System  」\`\`\`\n\n@${kice.split("@")[0]} Baka has been removed for sending links in this group!`, contextInfo: { mentionedJid: [kice] } }, { quoted: m })
+        await Maria.groupParticipantsUpdate(m.chat, [kice], 'remove')
+        Maria.sendMessage(from, { text: `\`\`\`「  Antilink System  」\`\`\`\n\n@${kice.split("@")[0]} Baka has been removed for sending links in this group!`, contextInfo: { mentionedJid: [kice] } }, { quoted: m })
       } else {
       }
 
@@ -324,6 +324,34 @@ module.exports = Maria = async (Maria, m, chatUpdate, store) => {
 				chats.length
 					\n\n📍 *Last Re-booted:${runtime(process.uptime())} *📍 Total Users: users\n\n💢  *Total Banned Users: uban\n\n\n  *©️ Ayush Bots*\n\n`
         break
+
+         case 'antilink': {
+    if (isBan) return reply(mess.banned)	 			
+ if (isBanChat) return reply(mess.bangc)
+ if (!m.isGroup) return replay(mess.grouponly)
+ if (!isBotAdmins) return replay(mess.botadmin)
+ if (!isAdmins && !isCreator) return replay(mess.useradmin)
+ if (args[0] === "on") {
+ if (AntiLinkAll) return replay('Already activated')
+ ntilinkall.push(from)
+ replay('Enabled all antilink !')
+ var groupe = await Maria.groupMetadata(from)
+ var members = groupe['participants']
+ var mems = []
+ members.map(async adm => {
+ mems.push(adm.id.replace('c.us', 's.whatsapp.net'))
+ })
+ Maria.sendMessage(from, {text: `\`\`\`「 Warning 」\`\`\`\n\nAntilink System Activated!`, contextInfo: { mentionedJid : mems }}, {quoted:m})
+ } else if (args[0] === "off") {
+ if (!AntiLinkAll) return replay('Already deactivated')
+ let off = ntilinkall.indexOf(from)
+ ntilinkall.splice(off, 1)
+ replay('Disabled all antilink !')
+ } else {
+   await Maria.sendButtonText(m.chat, buttonsntilink, `Please click the button below\n\nOn to enable\nOff to disable`, `${global.BotName}`, m)
+   }
+   }
+   break
 
       case 'owner': case 'creator': case 'mod': case 'mods': {
         Maria.sendContact(m.chat, global.Owner, m)
