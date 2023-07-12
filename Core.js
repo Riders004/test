@@ -182,8 +182,12 @@ module.exports = Maria = async (Maria, m, chatUpdate, store) => {
     _sewa.expiredCheck(Maria, sewa);
 
     const reply = (teks) => {
-      Maria.sendMessage(m.chat, { text: teks }, { quoted: m });
-    };
+            Maria.sendMessage(m.chat, { text: teks},{ quoted: m})
+        }
+        
+        const replay = (teks) => {
+            Maria.sendMessage(m.chat, { text: teks}, { quoted: m})
+        }
 
 
     /* const replay = (teks) => {
@@ -285,6 +289,7 @@ module.exports = Maria = async (Maria, m, chatUpdate, store) => {
     }
 
     if (AntiLinkAll)
+      var rondonxk = '[-a-zA-Z0-9@:%._+~#=].[-a-zA-Z0-9@:%._+~#=].[-a-zA-Z0-9()@:%_+.~#?&/=]'
       if (budy.includes("https://")) {
         if (!isBotAdmins) return
         bvl = `\`\`\`「  Antilink System  」\`\`\`\n\nLink sent by Admin so no action will be taken!`
@@ -292,8 +297,48 @@ module.exports = Maria = async (Maria, m, chatUpdate, store) => {
         if (m.key.fromMe) return reply(bvl)
         if (isCreator) return reply(bvl)
         kice = m.sender
-        await Maria.groupParticipantsUpdate(m.chat, [kice], 'remove')
-        Maria.sendMessage(from, { text: `\`\`\`「  Antilink System  」\`\`\`\n\n@${kice.split("@")[0]} Baka has been removed for sending links in this group!`, contextInfo: { mentionedJid: [kice] } }, { quoted: m })
+        await Maria.sendMessage(
+          from,
+          {
+            delete: {
+              remoteJid: from,
+              fromMe: false,
+              id: m.id,
+              participant: m.sender,
+            },
+          },
+          {
+            quoted: m,
+          }
+        );
+      //  await Maria.groupParticipantsUpdate(m.chat, [kice], 'remove')
+        Maria.sendMessage(from, { text: `\`\`\`「  Antilink System  」\`\`\`\n\n*⚠️ Group link detected !*\n\n*🚫@${kice.split("@")[0]} You are not allowed to send any links in this group !*\n`, contextInfo: { mentionedJid: [kice] } }, { quoted: m })
+      } else {
+      }
+
+    if (budy.includes("http://")) {
+        if (!isBotAdmins) return
+        bvl = `\`\`\`「  Antilink System  」\`\`\`\n\nLink sent by Admin so no action will be taken!`
+        if (isAdmins) return reply(bvl)
+        if (m.key.fromMe) return reply(bvl)
+        if (isCreator) return reply(bvl)
+        kice = m.sender
+        await Maria.sendMessage(
+          from,
+          {
+            delete: {
+              remoteJid: from,
+              fromMe: false,
+              id: m.id,
+              participant: m.sender,
+            },
+          },
+          {
+            quoted: m,
+          }
+        );
+      //  await Maria.groupParticipantsUpdate(m.chat, [kice], 'remove')
+        Maria.sendMessage(from, { text: `\`\`\`「  Antilink System  」\`\`\`\n\n*⚠️ Group link detected !*\n\n*🚫@${kice.split("@")[0]} You are not allowed to send any links in this group !*\n`, contextInfo: { mentionedJid: [kice] } }, { quoted: m })
       } else {
       }
 
@@ -348,6 +393,10 @@ module.exports = Maria = async (Maria, m, chatUpdate, store) => {
  ntilinkall.splice(off, 1)
  replay('Disabled all antilink !')
  } else {
+   let buttonsntilink = [
+   { buttonId: `${prefix}antilinkall on`, buttonText: { displayText: 'On' }, type: 1 },
+   { buttonId: `${prefix}antilinkall off`, buttonText: { displayText: 'Off' }, type: 1 }
+   ]
    await Maria.sendButtonText(m.chat, buttonsntilink, `Please click the button below\n\nOn to enable\nOff to disable`, `${global.BotName}`, m)
    }
    }
