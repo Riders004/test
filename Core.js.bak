@@ -458,13 +458,13 @@ case 'remove': case 'kick':{
         break
         
       case 'add': {
-		if (!m.isGroup) throw mess.group
-                if (!isBotAdmins) throw mess.botAdmin
-                if (!isAdmins) throw mess.admin
-		let users = m.quoted ? m.quoted.sender : text.replace(/[^0-9]/g, '')+'@s.whatsapp.net'
-		await Maria.groupParticipantsUpdate(m.chat, [users], 'add').then((res) => m.reply(jsonformat(res))).catch((err) => m.reply(jsonformat(err)))
-	}
-	break
+        if (!m.isGroup) return replay(mess.grouponly)
+        if (!isBotAdmins) return replay(mess.botadmin)
+        let users = m.quoted ? m.quoted.sender : text.replace(/[^0-9]/g, '') + '@s.whatsapp.net'
+        if (users.length == 0) return replay(`Please write the number of the person you want to add to thhis group`)
+        await Maria.groupParticipantsUpdate(m.chat, [users], 'add').then((res) => replay(`User Added Successfully!`)).catch((err) => replay(`Cannot add that user to this group!`))
+      }
+        break
         
         case 'resetlinkgc':
     case 'resetlinkgroup':

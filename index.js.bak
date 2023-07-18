@@ -1,6 +1,6 @@
 require("./config.js");
 const {
-  default: MariaConnect,
+  default: StalkerConnect,
   useMultiFileAuthState,
   DisconnectReason,
   fetchLatestBaileysVersion,
@@ -45,10 +45,10 @@ const store = makeInMemoryStore({
   logger: pino().child({ level: "silent", stream: "store" }),
 });
 
-async function startMaria() {
+async function startStalker() {
   console.log(
     color(
-      figlet.textSync("Maria Bot MD", {
+      figlet.textSync("Stalker Bot MD", {
         font: "Pagga",
         horizontalLayout: "default",
         vertivalLayout: "default",
@@ -67,16 +67,16 @@ async function startMaria() {
   );
   console.log(color("\nYou can follow me on GitHub: FantoX001", "aqua"));
   const { state, saveCreds } = await useMultiFileAuthState("./Session");
-  const Maria = MariaConnect({
+  const Stalker = StalkerConnect({
     logger: pino({ level: "silent" }),
     printQRInTerminal: true,
-    browser: ["Maria Bot", "Safari", "1.0.0"],
+    browser: ["Stalker Bot", "Safari", "1.0.0"],
     auth: state,
   });
 
-  store.bind(Maria.ev);
+  store.bind(Stalker.ev);
 
-  Maria.ev.on("messages.upsert", async (chatUpdate) => {
+  Stalker.ev.on("messages.upsert", async (chatUpdate) => {
     try {
       mek = chatUpdate.messages[0];
       if (!mek.message) return;
@@ -85,17 +85,17 @@ async function startMaria() {
           ? mek.message.ephemeralMessage.message
           : mek.message;
       if (mek.key && mek.key.remoteJid === "status@broadcast") return;
-      if (!Maria.public && !mek.key.fromMe && chatUpdate.type === "notify")
+      if (!Stalker.public && !mek.key.fromMe && chatUpdate.type === "notify")
         return;
       if (mek.key.id.startsWith("BAE5") && mek.key.id.length === 16) return;
-      m = smsg(Maria, mek, store);
-      require("./Core")(Maria, m, chatUpdate, store);
+      m = smsg(Stalker, mek, store);
+      require("./Core")(Stalker, m, chatUpdate, store);
     } catch (err) {
       console.log(err);
     }
   });
 
-  Maria.decodeJid = (jid) => {
+  Stalker.decodeJid = (jid) => {
     if (!jid) return jid;
     if (/:\d+@/gi.test(jid)) {
       let decode = jidDecode(jid) || {};
@@ -106,22 +106,22 @@ async function startMaria() {
     } else return jid;
   };
 
-  Maria.ev.on("contacts.update", (update) => {
+  Stalker.ev.on("contacts.update", (update) => {
     for (let contact of update) {
-      let id = Maria.decodeJid(contact.id);
+      let id = Stalker.decodeJid(contact.id);
       if (store && store.contacts)
         store.contacts[id] = { id, name: contact.notify };
     }
   });
 
-  Maria.getName = (jid, withoutContact = false) => {
-    id = Maria.decodeJid(jid);
-    withoutContact = Maria.withoutContact || withoutContact;
+  Stalker.getName = (jid, withoutContact = false) => {
+    id = Stalker.decodeJid(jid);
+    withoutContact = Stalker.withoutContact || withoutContact;
     let v;
     if (id.endsWith("@g.us"))
       return new Promise(async (resolve) => {
         v = store.contacts[id] || {};
-        if (!(v.name || v.subject)) v = Maria.groupMetadata(id) || {};
+        if (!(v.name || v.subject)) v = Stalker.groupMetadata(id) || {};
         resolve(
           v.name ||
             v.subject ||
@@ -137,8 +137,8 @@ async function startMaria() {
               id,
               name: "WhatsApp",
             }
-          : id === Maria.decodeJid(Maria.user.id)
-          ? Maria.user
+          : id === Stalker.decodeJid(Stalker.user.id)
+          ? Stalker.user
           : store.contacts[id] || {};
     return (
       (withoutContact ? "" : v.name) ||
@@ -150,12 +150,12 @@ async function startMaria() {
     );
   };
 
-  Maria.sendContact = async (jid, kon, quoted = "", opts = {}) => {
+  Stalker.sendContact = async (jid, kon, quoted = "", opts = {}) => {
     let list = [];
     for (let i of kon) {
       list.push({
-        displayName: await Maria.getName(i + "@s.whatsapp.net"),
-        vcard: `BEGIN:VCARD\nVERSION:3.0\nN:${await Maria.getName(
+        displayName: await Stalker.getName(i + "@s.whatsapp.net"),
+        vcard: `BEGIN:VCARD\nVERSION:3.0\nN:${await Stalker.getName(
           i + "@s.whatsapp.net"
         )}\nFN:${
           global.OwnerName
@@ -168,7 +168,7 @@ async function startMaria() {
         };;;;\nitem4.X-ABLabel:Region\nEND:VCARD`,
       });
     }
-    Maria.sendMessage(
+    Stalker.sendMessage(
       jid,
       {
         contacts: { displayName: `${list.length} Contact`, contacts: list },
@@ -178,8 +178,8 @@ async function startMaria() {
     );
   };
 
-  Maria.setStatus = (status) => {
-    Maria.query({
+  Stalker.setStatus = (status) => {
+    Stalker.query({
       tag: "iq",
       attrs: {
         to: "@s.whatsapp.net",
@@ -197,11 +197,11 @@ async function startMaria() {
     return status;
   };
 
-  Maria.public = true;
+  Stalker.public = true;
 
-  Maria.serializeM = (m) => smsg(Maria, m, store);
+  Stalker.serializeM = (m) => smsg(Stalker, m, store);
 
-  Maria.ev.on("connection.update", async (update) => {
+  Stalker.ev.on("connection.update", async (update) => {
     const { connection, lastDisconnect } = update;
     if (connection === "close") {
       let reason = lastDisconnect.error
@@ -212,10 +212,10 @@ async function startMaria() {
         process.exit();
       } else if (reason === DisconnectReason.connectionClosed) {
         console.log("Connection closed, reconnecting....");
-        startMaria();
+        startStalker();
       } else if (reason === DisconnectReason.connectionLost) {
         console.log("Connection Lost from Server, reconnecting...");
-        startMaria();
+        startStalker();
       } else if (reason === DisconnectReason.connectionReplaced) {
         console.log(
           "Connection Replaced, Another New Session Opened, Please Close Current Session First"
@@ -226,10 +226,10 @@ async function startMaria() {
         process.exit();
       } else if (reason === DisconnectReason.restartRequired) {
         console.log("Restart Required, Restarting...");
-        startMaria();
+        startStalker();
       } else if (reason === DisconnectReason.timedOut) {
         console.log("Connection TimedOut, Reconnecting...");
-        startMaria();
+        startStalker();
       } else {
         console.log(`Unknown DisconnectReason: ${reason}|${connection}`);
       }
@@ -237,7 +237,7 @@ async function startMaria() {
     //console.log('Connected...', update)
   });
 
-  Maria.ev.on("creds.update", saveCreds);
+  Stalker.ev.on("creds.update", saveCreds);
 
   /** Send Button 5 Images
    *
@@ -249,7 +249,7 @@ async function startMaria() {
    * @param {*} options
    * @returns
    */
-  Maria.send5ButImg = async (
+  Stalker.send5ButImg = async (
     jid,
     text = "",
     footer = "",
@@ -260,7 +260,7 @@ async function startMaria() {
   ) => {
     let message = await prepareWAMessageMedia(
       { image: img, jpegThumbnail: thumb },
-      { upload: Maria.waUploadToServer }
+      { upload: Stalker.waUploadToServer }
     );
     var template = generateWAMessageFromContent(
       m.chat,
@@ -276,7 +276,7 @@ async function startMaria() {
       }),
       options
     );
-    Maria.relayMessage(jid, template.message, { messageId: template.key.id });
+    Stalker.relayMessage(jid, template.message, { messageId: template.key.id });
   };
 
   /**
@@ -288,7 +288,7 @@ async function startMaria() {
    * @param {*} quoted
    * @param {*} options
    */
-  Maria.sendButtonText = (
+  Stalker.sendButtonText = (
     jid,
     buttons = [],
     text,
@@ -303,7 +303,7 @@ async function startMaria() {
       headerType: 2,
       ...options,
     };
-    Maria.sendMessage(jid, buttonMessage, { quoted, ...options });
+    Stalker.sendMessage(jid, buttonMessage, { quoted, ...options });
   };
 
   /**
@@ -314,8 +314,8 @@ async function startMaria() {
    * @param {*} options
    * @returns
    */
-  Maria.sendText = (jid, text, quoted = "", options) =>
-    Maria.sendMessage(jid, { text: text, ...options }, { quoted });
+  Stalker.sendText = (jid, text, quoted = "", options) =>
+    Stalker.sendMessage(jid, { text: text, ...options }, { quoted });
 
   /**
    *
@@ -326,7 +326,7 @@ async function startMaria() {
    * @param {*} options
    * @returns
    */
-  Maria.sendImage = async (jid, path, caption = "", quoted = "", options) => {
+  Stalker.sendImage = async (jid, path, caption = "", quoted = "", options) => {
     let buffer = Buffer.isBuffer(path)
       ? path
       : /^data:.*?\/.*?;base64,/i.test(path)
@@ -336,7 +336,7 @@ async function startMaria() {
       : fs.existsSync(path)
       ? fs.readFileSync(path)
       : Buffer.alloc(0);
-    return await Maria.sendMessage(
+    return await Stalker.sendMessage(
       jid,
       { image: buffer, caption: caption, ...options },
       { quoted }
@@ -352,7 +352,7 @@ async function startMaria() {
    * @param {*} options
    * @returns
    */
-  Maria.sendVideo = async (
+  Stalker.sendVideo = async (
     jid,
     path,
     caption = "",
@@ -369,7 +369,7 @@ async function startMaria() {
       : fs.existsSync(path)
       ? fs.readFileSync(path)
       : Buffer.alloc(0);
-    return await Maria.sendMessage(
+    return await Stalker.sendMessage(
       jid,
       { video: buffer, caption: caption, gifPlayback: gif, ...options },
       { quoted }
@@ -385,7 +385,7 @@ async function startMaria() {
    * @param {*} options
    * @returns
    */
-  Maria.sendAudio = async (jid, path, quoted = "", ptt = false, options) => {
+  Stalker.sendAudio = async (jid, path, quoted = "", ptt = false, options) => {
     let buffer = Buffer.isBuffer(path)
       ? path
       : /^data:.*?\/.*?;base64,/i.test(path)
@@ -395,7 +395,7 @@ async function startMaria() {
       : fs.existsSync(path)
       ? fs.readFileSync(path)
       : Buffer.alloc(0);
-    return await Maria.sendMessage(
+    return await Stalker.sendMessage(
       jid,
       { audio: buffer, ptt: ptt, ...options },
       { quoted }
@@ -410,8 +410,8 @@ async function startMaria() {
    * @param {*} options
    * @returns
    */
-  Maria.sendTextWithMentions = async (jid, text, quoted, options = {}) =>
-    Maria.sendMessage(
+  Stalker.sendTextWithMentions = async (jid, text, quoted, options = {}) =>
+    Stalker.sendMessage(
       jid,
       {
         text: text,
@@ -433,7 +433,7 @@ async function startMaria() {
    * @param {*} options
    * @returns
    */
-  Maria.sendImageAsSticker = async (jid, path, quoted, options = {}) => {
+  Stalker.sendImageAsSticker = async (jid, path, quoted, options = {}) => {
     let buff = Buffer.isBuffer(path)
       ? path
       : /^data:.*?\/.*?;base64,/i.test(path)
@@ -450,7 +450,7 @@ async function startMaria() {
       buffer = await imageToWebp(buff);
     }
 
-    await Maria.sendMessage(
+    await Stalker.sendMessage(
       jid,
       { sticker: { url: buffer }, ...options },
       { quoted }
@@ -466,7 +466,7 @@ async function startMaria() {
    * @param {*} options
    * @returns
    */
-  Maria.sendVideoAsSticker = async (jid, path, quoted, options = {}) => {
+  Stalker.sendVideoAsSticker = async (jid, path, quoted, options = {}) => {
     let buff = Buffer.isBuffer(path)
       ? path
       : /^data:.*?\/.*?;base64,/i.test(path)
@@ -483,14 +483,14 @@ async function startMaria() {
       buffer = await videoToWebp(buff);
     }
 
-    await Maria.sendMessage(
+    await Stalker.sendMessage(
       jid,
       { sticker: { url: buffer }, ...options },
       { quoted }
     );
     return buffer;
   };
-  Maria.sendMedia = async (
+  Stalker.sendMedia = async (
     jid,
     path,
     fileName = "",
@@ -498,7 +498,7 @@ async function startMaria() {
     quoted = "",
     options = {}
   ) => {
-    let types = await Maria.getFile(path, true);
+    let types = await Stalker.getFile(path, true);
     let { mime, ext, res, data, filename } = types;
     if ((res && res.status !== 200) || file.length <= 65536) {
       try {
@@ -526,7 +526,7 @@ async function startMaria() {
     else if (/video/.test(mime)) type = "video";
     else if (/audio/.test(mime)) type = "audio";
     else type = "document";
-    await Maria.sendMessage(
+    await Stalker.sendMessage(
       jid,
       { [type]: { url: pathFile }, caption, mimetype, fileName, ...options },
       { quoted, ...options }
@@ -540,7 +540,7 @@ async function startMaria() {
    * @param {*} attachExtension
    * @returns
    */
-  Maria.downloadAndSaveMediaMessage = async (
+  Stalker.downloadAndSaveMediaMessage = async (
     message,
     filename,
     attachExtension = true
@@ -562,7 +562,7 @@ async function startMaria() {
     return trueFileName;
   };
 
-  Maria.downloadMediaMessage = async (message) => {
+  Stalker.downloadMediaMessage = async (message) => {
     let mime = (message.msg || message).mimetype || "";
     let messageType = message.mtype
       ? message.mtype.replace(/Message/gi, "")
@@ -584,7 +584,7 @@ async function startMaria() {
    * @param {*} options
    * @returns
    */
-  Maria.copyNForward = async (
+  Stalker.copyNForward = async (
     jid,
     message,
     forceForward = false,
@@ -635,13 +635,13 @@ async function startMaria() {
           }
         : {}
     );
-    await Maria.relayMessage(jid, waMessage.message, {
+    await Stalker.relayMessage(jid, waMessage.message, {
       messageId: waMessage.key.id,
     });
     return waMessage;
   };
 
-  Maria.sendListMsg = (
+  Stalker.sendListMsg = (
     jid,
     text = "",
     footer = "",
@@ -658,14 +658,14 @@ async function startMaria() {
       buttonText: butText,
       sections,
     };
-    Maria.sendMessage(jid, listMes, { quoted: quoted });
+    Stalker.sendMessage(jid, listMes, { quoted: quoted });
   };
 
-  Maria.cMod = (
+  Stalker.cMod = (
     jid,
     copy,
     text = "",
-    sender = Maria.user.id,
+    sender = Stalker.user.id,
     options = {}
   ) => {
     //let copy = message.toJSON()
@@ -695,7 +695,7 @@ async function startMaria() {
     else if (copy.key.remoteJid.includes("@broadcast"))
       sender = sender || copy.key.remoteJid;
     copy.key.remoteJid = jid;
-    copy.key.fromMe = sender === Maria.user.id;
+    copy.key.fromMe = sender === Stalker.user.id;
 
     return proto.WebMessageInfo.fromObject(copy);
   };
@@ -705,7 +705,7 @@ async function startMaria() {
    * @param {*} path
    * @returns
    */
-  Maria.getFile = async (PATH, save) => {
+  Stalker.getFile = async (PATH, save) => {
     let res;
     let data = Buffer.isBuffer(PATH)
       ? PATH
@@ -737,7 +737,7 @@ async function startMaria() {
     };
   };
 
-  Maria.send5ButGif = async (
+  Stalker.send5ButGif = async (
     jid,
     text = "",
     footer = "",
@@ -747,7 +747,7 @@ async function startMaria() {
   ) => {
     let message = await prepareWAMessageMedia(
       { video: gif, gifPlayback: true },
-      { upload: Maria.waUploadToServer }
+      { upload: Stalker.waUploadToServer }
     );
     var template = generateWAMessageFromContent(
       jid,
@@ -763,10 +763,10 @@ async function startMaria() {
       }),
       options
     );
-    Maria.relayMessage(jid, template.message, { messageId: template.key.id });
+    Stalker.relayMessage(jid, template.message, { messageId: template.key.id });
   };
 
-  Maria.send5ButVid = async (
+  Stalker.send5ButVid = async (
     jid,
     text = "",
     footer = "",
@@ -776,7 +776,7 @@ async function startMaria() {
   ) => {
     let message = await prepareWAMessageMedia(
       { video: vid },
-      { upload: Maria.waUploadToServer }
+      { upload: Stalker.waUploadToServer }
     );
     var template = generateWAMessageFromContent(
       jid,
@@ -792,21 +792,21 @@ async function startMaria() {
       }),
       options
     );
-    Maria.relayMessage(jid, template.message, { messageId: template.key.id });
+    Stalker.relayMessage(jid, template.message, { messageId: template.key.id });
   };
   //send5butmsg
-  Maria.send5ButMsg = (jid, text = "", footer = "", but = []) => {
+  Stalker.send5ButMsg = (jid, text = "", footer = "", but = []) => {
     let templateButtons = but;
     var templateMessage = {
       text: text,
       footer: footer,
       templateButtons: templateButtons,
     };
-    Maria.sendMessage(jid, templateMessage);
+    Stalker.sendMessage(jid, templateMessage);
   };
 
-  Maria.sendFile = async (jid, PATH, fileName, quoted = {}, options = {}) => {
-    let types = await Maria.getFile(PATH, true);
+  Stalker.sendFile = async (jid, PATH, fileName, quoted = {}, options = {}) => {
+    let types = await Stalker.getFile(PATH, true);
     let { filename, size, ext, mime, data } = types;
     let type = "",
       mimetype = mime,
@@ -827,23 +827,23 @@ async function startMaria() {
     else if (/video/.test(mime)) type = "video";
     else if (/audio/.test(mime)) type = "audio";
     else type = "document";
-    await Maria.sendMessage(
+    await Stalker.sendMessage(
       jid,
       { [type]: { url: pathFile }, mimetype, fileName, ...options },
       { quoted, ...options }
     );
     return fs.promises.unlink(pathFile);
   };
-  Maria.parseMention = async (text) => {
+  Stalker.parseMention = async (text) => {
     return [...text.matchAll(/@([0-9]{5,16}|0)/g)].map(
       (v) => v[1] + "@s.whatsapp.net"
     );
   };
 
-  return Maria;
+  return Stalker;
 }
 
-startMaria();
+startStalker();
 
 let file = require.resolve(__filename);
 fs.watchFile(file, () => {
