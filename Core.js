@@ -10,6 +10,7 @@ const moment = require("moment-timezone");
 const { EmojiAPI } = require("emoji-api");
 const { addBalance } = require("./lib/limit.js");
 const { smsg, formatp, tanggal, GIFBufferToVideoBuffer, formatDate, getTime, isUrl, sleep, clockString, runtime, fetchJson, getBuffer, jsonformat, format, parseMention, getRandom } = require('./lib/myfunc')
+const { Sticker, StickerTypes } = require("wa-sticker-formatter");
 const _ = require("lodash");
 const yargs = require("yargs/yargs");
 var low;
@@ -131,6 +132,7 @@ module.exports = Maria = async (Maria, m, chatUpdate, store) => {
     var body = (m.mtype === 'conversation') ? m.message.conversation : (m.mtype == 'imageMessage') ? m.message.imageMessage.caption : (m.mtype == 'videoMessage') ? m.message.videoMessage.caption : (m.mtype == 'extendedTextMessage') ? m.message.extendedTextMessage.text : (m.mtype == 'buttonsResponseMessage') ? m.message.buttonsResponseMessage.selectedButtonId : (m.mtype == 'listResponseMessage') ? m.message.listResponseMessage.singleSelectReply.selectedRowId : (m.mtype == 'templateButtonReplyMessage') ? m.message.templateButtonReplyMessage.selectedId : (m.mtype === 'messageContextInfo') ? (m.message.buttonsResponseMessage?.selectedButtonId || m.message.listResponseMessage?.singleSelectReply.selectedRowId || m.text) : ''
     var budy = (typeof m.text == 'string' ? m.text : '')
     const prefix = global.prefa
+    const packname = global.packname
     const mariapic = global.thum
     const isCmd = body.startsWith(prefix)
     const notCmd = body.startsWith('')
@@ -837,8 +839,82 @@ case 'truth':
                            Maria.sendMessage(from, { image: buffer, caption: '*You have chosen Truth*\n'+ Mariatruthww }, {quoted:m})
                            break
                            
+                           case 'fact': {
+    	const { data } = await axios.get(`https://nekos.life/api/v2/fact`)
+        return reply(`📍 *Fact:* ${data.fact}\n`)   
+    }
+    break
+                           
  ///////////////////////////////////////////////////
-//Nsfw menu
+//other menu
+
+    case 'ig': {
+if (!args[0]) return reply(`Enter Instagram Username\n\nExample: ${prefix + command} Official_bhardwaj023`)
+const fg = require('api-dylux')
+    try {
+    let res = await fg.igStalk(args[0])
+    let te = `
+┌──「 *📍Instragram📍* 
+▢ *⚡Name:* ${res.name} 
+▢ *🔖Username:* ${res.username}
+▢ *👥Follower:* ${res.followersH}
+▢ *🫂Following:* ${res.followingH}
+▢ *📌Bio:* ${res.description}
+▢ *🏝️Posts:* ${res.postsH}
+▢ *🔗 Link* : https://instagram.com/${res.username.replace(/^@/, '')}
+└────────────`
+     await Maria.sendMessage(m.chat, {image: { url: res.profilePic }, caption: te }, {quoted: m})
+      } catch {
+        reply(`Make sure the username comes from *Instagram*`)
+      }
+}
+break
+
+case "s":
+      case "sticker":
+        if (/image/.test(mime)) {
+          
+          let mediaMess = await quoted.download();
+          let stickerMess = new Sticker(mediaMess, {
+            pack: packname,
+            author: global.author,
+            type: StickerTypes.FULL,
+            categories: ["🤩", "🎉"],
+            id: "12345",
+            quality: 70,
+            background: "transparent",
+          });
+          const stickerBuffer = await stickerMess.toBuffer();
+          Maria.sendMessage(m.from, { sticker: stickerBuffer }, { quoted: m });
+        } else if (/video/.test(mime)) {
+          
+          let mediaMess = await quoted.download();
+          if ((quoted.msg || quoted).seconds > 15) {
+            
+            return Maria.sendMessage(
+              m.from,
+              { text: "Please send video less than 15 seconds." },
+              { quoted: m }
+            );
+          }
+          let stickerMess = new Sticker(mediaMess, {
+            pack: packname,
+            author: global.author,
+            type: StickerTypes.FULL,
+            categories: ["🤩", "🎉"],
+            id: "12345",
+            quality: 70,
+            background: "transparent",
+          });
+          const stickerBuffer2 = await stickerMess.toBuffer();
+          Maria.sendMessage(m.from, { sticker: stickerBuffer2 }, { quoted: m });
+        } else {
+          
+          m.reply(
+            `Please mention an *image/video* and type *${prefix}s* to create sticker.`
+          );
+        }
+        break
 
       default:
         if (budy.startsWith("=>")) {
