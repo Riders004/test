@@ -28,7 +28,7 @@
     "@shineiichijo/nhentai-pdf": "^1.0.5",
     "anime-wallpaper": "^1.0.2",
     "awesome-phonenumber": "^2.70.0",
-    "axios": "^0.24.0",
+    "axios": "^0.28.0",
     "baileysjs": "^6.2.1",
     "cfonts": "^2.9.0",
     "chalk": "^4.1.2",
